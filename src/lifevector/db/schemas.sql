@@ -1,6 +1,7 @@
 --- Schemas for tables in LifeVector database:
 
-CREATE TABLE goals (
+
+CREATE TABLE IF NOT EXISTS goals(
 
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 
@@ -25,7 +26,7 @@ CREATE TABLE goals (
     FOREIGN KEY (parent_goal_id) REFERENCES goals(id) ON DELETE CASCADE
 );
 
-CREATE TABLE scheduled_activities (
+CREATE TABLE IF NOT EXISTS scheduled_activities (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 
@@ -41,7 +42,8 @@ CREATE TABLE scheduled_activities (
 
 );
 
-CREATE TABLE roles (
+
+CREATE TABLE IF NOT EXISTS roles (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 
@@ -51,7 +53,7 @@ CREATE TABLE roles (
 
     sort_order INTEGER NOT NULL,
 
-    status INTEGER DEFAULT 1
+    is_active INTEGER DEFAULT 1
 
 );
 
