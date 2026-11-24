@@ -47,11 +47,11 @@ CREATE TABLE IF NOT EXISTS roles (
 
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 
-    name TEXT NOT NULL,
+    name TEXT UNIQUE NOT NULL,
 
     description TEXT,
 
-    sort_order INTEGER NOT NULL,
+    sort_order TEXT COLLATE BINARY UNIQUE NOT NULL,
 
     is_active INTEGER DEFAULT 1
 
