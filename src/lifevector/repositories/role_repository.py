@@ -67,16 +67,23 @@ class RoleRepository:
         con.commit()
         con.close()
 
-    # Get all roles
-    def get_all_roles(self) -> list[Role] | None:
-        """This function returns a list of all the roles in the LifeVector database"""
+    def get_all_roles(self, status: str = "all") -> list[Role] | None:
+        """This function returns a list of roles present in the LifeVector database that match the provided status. If no status is given or the caller provides an invalid status then it returns all of the roles"""
+
+        # Determine the right SQL query
+        if status == "active":
+            query = "SELECT * FROM roles WHERE is_active = 1 ORDER BY sort_order ASC"
+        elif status == "inactive":
+            query = "SELECT * FROM roles WHERE is_active = 0 ORDER BY sort_order ASC"
+        else:
+            query = "SELECT * FROM roles ORDER BY sort_order ASC"
 
         # Initiate a connection
         con = self.db_manager.connect()
         cur = con.cursor()
 
-        # Retrive data for all roles
-        rows = cur.execute("SELECT * FROM roles ORDER BY sort_order ASC").fetchall()
+        # Retrive data for specified roles
+        rows = cur.execute(query).fetchall()
 
         # Commit and close connection
         con.commit()
@@ -102,6 +109,46 @@ class RoleRepository:
 
         return roles
 
+    def get_first_sort_order(self) -> str | None:
+        """This function returns the sort_order of the orderwise first role in the LifeVector database"""
+
+        # Initiate a connection
+        con = self.db_manager.connect()
+        cur = con.cursor()
+
+        # Retreive sort order roles
+        row = cur.execute("SELECT MIN(sort_order) FROM roles").fetchone()
+
+        # Commit and close connection
+        con.commit()
+        con.close()
+
+        # Validate data
+        if not row:
+            return None
+
+        return row[0]
+
+    def get_last_sort_order(self) -> str | None:
+        """This function returns the sort_order of the orderwise last role in the LifeVector database"""
+
+        # Initiate a connection
+        con = self.db_manager.connect()
+        cur = con.cursor()
+
+        # Retreive sort order roles
+        row = cur.execute("SELECT MAX(sort_order) FROM roles").fetchone()
+
+        # Commit and close connection
+        con.commit()
+        con.close()
+
+        # Validate data
+        if not row:
+            return None
+
+        return row[0]
+
     def get_role(self, id: int) -> Role | None:
         """This function returns a role object from the LifeVector database which matches the provided id"""
 
@@ -125,15 +172,23 @@ class RoleRepository:
             row[1], row[3], description=row[2], is_active=bool(row[4]), id=row[0]
         )
 
-    def remove_all_roles(self) -> None:
-        """This function deletes all the roles from the LifeVector"""
+    def remove_all_roles(self, status: str = "inactive") -> None:
+        """This function deletes all of the roles present in the LifeVector database that match the provided status. If no status is given or the caller provides an invalid status then it deletes all of the inactive roles"""
+
+        # Determine the right SQL query
+        if status == "active":
+            query = "DELETE FROM roles WHERE is_active = 1"
+        elif status == "all":
+            query = "DELETE FROM roles"
+        else:
+            query = "DELETE FROM roles WHERE is_active = 0"
 
         # Initiate a connection
         con = self.db_manager.connect()
         cur = con.cursor()
 
-        # Remove all roles
-        cur.execute("DELETE FROM roles")
+        # Remove all specified roles
+        cur.execute(query)
 
         # Commit and close connection
         con.commit()
@@ -147,6 +202,23 @@ class RoleRepository:
 
         # Remove role
         cur.execute("DELETE FROM roles WHERE id = ?", (str(id),))
+
+        # Commit and close connection
+        con.commit()
+        con.close()
+
+    def set_sort_order(self, id: int, key: str) -> None:
+        """This function can be used to update/modify the sort_order atribute of an existing role from the LifeVector database"""
+
+        # Initiate a connection
+        con = self.db_manager.connect()
+        cur = con.cursor()
+
+        # Update role's sort_order
+        cur.execute(
+            "UPDATE roles SET sort_order = ? WHERE id = ?",
+            (key, str(id)),
+        )
 
         # Commit and close connection
         con.commit()
@@ -168,15 +240,3 @@ class RoleRepository:
         # Commit and close connection
         con.commit()
         con.close()
-
-    def set_sort_order(self, role_id, key):
-        ...
-    
-    def get_active_roles(self):
-        ...
-    
-    def get_last_sort_order(self):
-        ...
-
-    def get_first_sort_order(self):
-        ...
